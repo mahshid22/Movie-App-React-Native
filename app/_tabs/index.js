@@ -1,6 +1,6 @@
 import React from "react";
 import { Dimensions } from "react-native";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet,ScrollView } from "react-native";
 import Carousel from "../components/Carousel";
 import MovieCard from "../components/MovieCard";
 import TVShowCard from "../components/TVShowCard";
@@ -38,13 +38,13 @@ const renderTVShowItem=({item})=>(
 )
 const Home = () => {
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.text}>Hello from Homddde</Text>
       <Text style={styles.text}>Movies:</Text>
       <Carousel data={sampleData} renderItem={renderMovieItem}/>
       <Text style={styles.text}>TV shows:</Text>
       <Carousel data={sampleData} renderItem={renderTVShowItem}/>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -53,8 +53,6 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     padding: 10,
     marginTop: 50
   },
