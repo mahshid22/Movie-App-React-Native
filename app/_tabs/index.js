@@ -29,17 +29,18 @@ const Home = () => {
   const renderMovieItem = ({ item }) => (
     <MovieCard
       movie={item}
-      onPress={() => router.push(`/detail?movieId= ${item.id}`)}
+      onPress={() => router.push(`/detail?movieId=${item.id}`)}
     />
   );
-  const renderTVShowItem = ({ item }) => <TVShowCard show={item}
-  onPress={() => router.push(`/detail?tvId= ${item.id}`)}
-
-  />;
+  const renderTVShowItem = ({ item }) => (
+    <TVShowCard
+      show={item}
+      onPress={() => router.push(`/detail?tvId=${item.id}`)}
+    />
+  );
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.text}>Hello from Homddde</Text>
       <Text style={styles.text}>Movies:</Text>
       <Carousel data={popularMovies} renderItem={renderMovieItem} />
       <Text style={styles.text}>TV shows:</Text>
