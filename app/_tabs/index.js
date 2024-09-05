@@ -5,10 +5,10 @@ import Carousel from "../components/Carousel";
 import MovieCard from "../components/MovieCard";
 import TVShowCard from "../components/TVShowCard";
 import { fetchPopularsTVShow, fetchPopularsMovies } from "../../utils/api";
+import { useRouter } from "expo-router";
 
-const renderMovieItem = ({ item }) => <MovieCard movie={item} />;
-const renderTVShowItem = ({ item }) => <TVShowCard show={item} />;
 const Home = () => {
+  const router = useRouter();
   const [popularMovies, setPopularMovies] = useState([]);
   const [popularTvShows, setPopularTvShows] = useState([]);
   useEffect(() => {
@@ -25,6 +25,17 @@ const Home = () => {
     loacalDAta();
     return () => {};
   }, []);
+
+  const renderMovieItem = ({ item }) => (
+    <MovieCard
+      movie={item}
+      onPress={() => router.push(`/detail?movieId= ${item.id}`)}
+    />
+  );
+  const renderTVShowItem = ({ item }) => <TVShowCard show={item}
+  onPress={() => router.push(`/detail?tvId= ${item.id}`)}
+
+  />;
 
   return (
     <ScrollView style={styles.container}>
