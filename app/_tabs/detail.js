@@ -1,12 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  ScrollView,
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { fetchTVShowDetails, fetchMovieDetails } from "../../utils/api";
+import {
+  fetchTVShowDetails,
+  fetchMovieDetails,
+  fetchShowTrailer,
+  fetchMovieTrailer,
+} from "../../utils/api";
+import { WebView } from "react-native-webview";
 const Detail = () => {
   const { movieId, tvId } = useLocalSearchParams();
   const [details, setDetails] = useState([]);
-  console.log("🚀 ~ Detail ~ details:", details)
   const [loading, setLoading] = useState(true);
+  const [trailerId, setTrailerId] = useState(null);
+  console.log("🚀 ~ Detail ~ trailerId:", trailerId)
   isMovie = Boolean(movieId);
   isTv = Boolean(tvId);
 
@@ -17,9 +30,13 @@ const Detail = () => {
           console.log("movieeeeeee");
           const movieDetails = await fetchMovieDetails(movieId);
           setDetails(movieDetails);
+          const movieTrailerId = await fetchMovieTrailer(movieId);
+          setTrailerId(movieTrailerId);
         } else if (isTv) {
           const tvDetails = await fetchTVShowDetails(tvId);
           setDetails(tvDetails);
+          const tvTrailerId = await fetchShowTrailer(tvId);
+          setTrailerId(tvTrailerId);
         }
       } catch (err) {
         console.log(err);
@@ -42,39 +59,55 @@ const Detail = () => {
     return <Text style={[styles.text]}>No details available</Text>;
   }
   return (
-    <View style={styles.detailsContainer}>
-      <Text style={[styles.title]}>{details.title || details.name}</Text>
-      <Text style={[styles.sectionTitle]}>Overview</Text>
-      <Text style={[styles.text]}>{details.overview}</Text>
-      <Text style={[styles.sectionTitle]}>Rating</Text>
-      <Text style={[styles.text]}>{details.vote_average}</Text>
-      <Text style={[styles.sectionTitle]}>Release Date</Text>
-      <Text style={[styles.text]}>
-        {details.release_date || details.first_air_date}
-      </Text>
-      <Text style={[styles.sectionTitle]}>Runtime</Text>
-      <Text style={[styles.text]}>
-        {details.runtime ? `${details.runtime} minutes` : "N/A"}
-      </Text>
-      <Text style={[styles.sectionTitle]}>Genres</Text>
-      <Text style={[styles.text]}>
-        {details.genres?.map((genre) => genre.name).join(", ")}
-      </Text>
-      <Text style={[styles.sectionTitle]}>Production Companies</Text>
-      <Text style={[styles.text]}>
-        {details.production_companies
-          ?.map((company) => company.name)
-          .join(", ") || "N/A"}
-      </Text>
-      <Text style={[styles.sectionTitle]}>Budget</Text>
-      <Text style={[styles.text]}>
-        {details.budget ? `$${details.budget.toLocaleString()}` : "N/A"}
-      </Text>
-      <Text style={[styles.sectionTitle]}>Revenue</Text>
-      <Text style={[styles.text]}>
-        {details.revenue ? `$${details.revenue.toLocaleString()}` : "N/A"}
-      </Text>
-    </View>
+    <ScrollView>
+      {trailerId ? (
+        <View style={styles.videoContainer}>
+          <WebView
+            source={{ uri: `https://www.youtube.com/embed/${trailerId}` }}
+            style={styles.video}
+            javaScriptEnabled
+            domStorageEnabled
+            allowsInlineMediaPlayback
+            onError={(error) => console.log(error)}
+          />
+        </View>
+      ) : (
+        <Text>no trailer</Text>
+      )}
+      <View style={styles.detailsContainer}>
+        <Text style={[styles.title]}>{details.title || details.name}</Text>
+        <Text style={[styles.sectionTitle]}>Overview</Text>
+        <Text style={[styles.text]}>{details.overview}</Text>
+        <Text style={[styles.sectionTitle]}>Rating</Text>
+        <Text style={[styles.text]}>{details.vote_average}</Text>
+        <Text style={[styles.sectionTitle]}>Release Date</Text>
+        <Text style={[styles.text]}>
+          {details.release_date || details.first_air_date}
+        </Text>
+        <Text style={[styles.sectionTitle]}>Runtime</Text>
+        <Text style={[styles.text]}>
+          {details.runtime ? `${details.runtime} minutes` : "N/A"}
+        </Text>
+        <Text style={[styles.sectionTitle]}>Genres</Text>
+        <Text style={[styles.text]}>
+          {details.genres?.map((genre) => genre.name).join(", ")}
+        </Text>
+        <Text style={[styles.sectionTitle]}>Production Companies</Text>
+        <Text style={[styles.text]}>
+          {details.production_companies
+            ?.map((company) => company.name)
+            .join(", ") || "N/A"}
+        </Text>
+        <Text style={[styles.sectionTitle]}>Budget</Text>
+        <Text style={[styles.text]}>
+          {details.budget ? `$${details.budget.toLocaleString()}` : "N/A"}
+        </Text>
+        <Text style={[styles.sectionTitle]}>Revenue</Text>
+        <Text style={[styles.text]}>
+          {details.revenue ? `$${details.revenue.toLocaleString()}` : "N/A"}
+        </Text>
+      </View>
+    </ScrollView>
   );
 };
 

@@ -23,7 +23,6 @@ const Home = () => {
       }
     };
     loacalDAta();
-    return () => {};
   }, []);
 
   const renderMovieItem = ({ item }) => (

@@ -88,3 +88,39 @@ export const fetchTVShowDetails = async (tvShowId) => {
     throw error;
   }
 };
+
+export const fetchMovieTrailer = async (movieId) => {
+  try {
+    const response = await api.get(`/movie/${movieId}/videos`, {
+      params: {
+        language: "en-US",
+      },
+    });
+
+    const trailers = response.data.results.filter(
+      (video) => video.site === "YouTube" && video.type === "Trailer"
+    );
+    return trailers.length ? trailers[0].key : null;
+  } catch (error) {
+    console.error("Failed to fetch movie trailer:", error);
+    throw error;
+  }
+};
+
+export const fetchShowTrailer = async (tvShowId) => {
+  try {
+    const response = await api.get(`/tv/${tvShowId}/videos`, {
+      params: {
+        language: "en-US",
+      },
+    });
+
+    const trailers = response.data.results.filter(
+      (video) => video.site === "YouTube" && video.type === "Trailer"
+    );
+    return trailers.length ? trailers[0].key : null;
+  } catch (error) {
+    console.error("Failed to fetch show trailer:", error);
+    throw error;
+  }
+};
