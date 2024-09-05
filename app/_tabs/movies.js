@@ -29,7 +29,6 @@ const Movies = () => {
   />;
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.text}>Hello from Homddde</Text>
       <Text style={styles.text}>Popular Movies:</Text>
       <Carousel data={popularMovies} renderItem={renderMovieItem} />
       <Text style={styles.text}>Recommended Movies:</Text>
