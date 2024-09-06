@@ -22,16 +22,23 @@ import { useRouter } from "expo-router";
 import MovieCard from "../components/MovieCard";
 import TVShowCard from "../components/TVShowCard";
 import Carousel from "../components/Carousel";
-
+import { useUser } from "../../context/UserContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const Detail = () => {
   const router = useRouter();
   const { movieId, tvId } = useLocalSearchParams();
   const [details, setDetails] = useState([]);
   const [similars, setSimilars] = useState([]);
-  console.log("🚀 ~ Detail ~ similars:", similars);
   const [loading, setLoading] = useState(true);
   const [trailerId, setTrailerId] = useState(null);
-  console.log("🚀 ~ Detail ~ trailerId:", trailerId);
+  const {
+    userName,
+    updateUsername,
+    watched,
+    setWatched,
+    toWatched,
+    setToWatched,
+  } = useUser();
   isMovie = Boolean(movieId);
   isTv = Boolean(tvId);
 
@@ -63,11 +70,19 @@ const Detail = () => {
     loadDetails();
   }, [movieId, tvId]);
 
-  const handleMarkAsWatched = () => {
-    return null;
+  const handleMarkAsWatched = async() => {
+    if (details) {
+      const newWatched = { ...watched, details };
+      setWatched(newWatched)
+      await AsyncStorage.setItem("watched",JSON.stringify(newWatched))
+    }
   };
-  const handleMarkAsToWatched = () => {
-    return null;
+  const handleMarkAsToWatched = async() => {
+    if (details) {
+      const neToWatch = { ...toWatched, details };
+      setToWatched(neToWatch)
+      await AsyncStorage.setItem("toWatched",JSON.stringify(neToWatch))
+    }
   };
   if (loading) {
     return (
