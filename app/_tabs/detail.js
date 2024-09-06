@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import {
@@ -12,14 +13,25 @@ import {
   fetchMovieDetails,
   fetchShowTrailer,
   fetchMovieTrailer,
+  fetchSimilarShows,
+  fetchSimilarMovies,
 } from "../../utils/api";
 import { WebView } from "react-native-webview";
+import { useRouter } from "expo-router";
+
+import MovieCard from "../components/MovieCard";
+import TVShowCard from "../components/TVShowCard";
+import Carousel from "../components/Carousel";
+
 const Detail = () => {
+  const router = useRouter();
   const { movieId, tvId } = useLocalSearchParams();
   const [details, setDetails] = useState([]);
+  const [similars, setSimilars] = useState([]);
+  console.log("🚀 ~ Detail ~ similars:", similars);
   const [loading, setLoading] = useState(true);
   const [trailerId, setTrailerId] = useState(null);
-  console.log("🚀 ~ Detail ~ trailerId:", trailerId)
+  console.log("🚀 ~ Detail ~ trailerId:", trailerId);
   isMovie = Boolean(movieId);
   isTv = Boolean(tvId);
 
@@ -32,11 +44,15 @@ const Detail = () => {
           setDetails(movieDetails);
           const movieTrailerId = await fetchMovieTrailer(movieId);
           setTrailerId(movieTrailerId);
+          const similarMovies = await fetchSimilarMovies(movieId);
+          setSimilars(similarMovies);
         } else if (isTv) {
           const tvDetails = await fetchTVShowDetails(tvId);
           setDetails(tvDetails);
           const tvTrailerId = await fetchShowTrailer(tvId);
           setTrailerId(tvTrailerId);
+          const similarTvShows = await fetchSimilarShows(tvId);
+          setSimilars(similarTvShows);
         }
       } catch (err) {
         console.log(err);
@@ -47,6 +63,12 @@ const Detail = () => {
     loadDetails();
   }, [movieId, tvId]);
 
+  const handleMarkAsWatched = () => {
+    return null;
+  };
+  const handleMarkAsToWatched = () => {
+    return null;
+  };
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -59,7 +81,7 @@ const Detail = () => {
     return <Text style={[styles.text]}>No details available</Text>;
   }
   return (
-    <ScrollView>
+    <ScrollView style={styles.container}>
       {trailerId ? (
         <View style={styles.videoContainer}>
           <WebView
@@ -107,6 +129,44 @@ const Detail = () => {
           {details.revenue ? `$${details.revenue.toLocaleString()}` : "N/A"}
         </Text>
       </View>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => handleMarkAsWatched}
+        >
+          <Text style={styles.buttonText}>mark as watched</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => handleMarkAsToWatched}
+        >
+          <Text style={styles.buttonText}>mark as To watched</Text>
+        </TouchableOpacity>
+      </View>
+      {!!similars.length && (
+        <View style={styles.similarContainer}>
+          <Text style={styles.similarTitle}>
+            {isMovie ? "similar movies" : "similar tv show"}
+          </Text>
+
+          <Carousel
+            data={similars}
+            renderItem={({ item }) =>
+              isMovie ? (
+                <MovieCard
+                  movie={item}
+                  onPress={() => router.push(`/detail?movieId=${item.id}`)}
+                />
+              ) : (
+                <TVShowCard
+                  show={item}
+                  onPress={() => router.push(`/detail?tvId=${item.id}`)}
+                />
+              )
+            }
+          />
+        </View>
+      )}
     </ScrollView>
   );
 };
@@ -155,7 +215,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   buttonContainer: {
-    marginTop: 16,
+    marginVertical: 16,
     flexDirection: "row",
     justifyContent: "space-between",
   },
@@ -165,6 +225,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginHorizontal: 8,
     alignItems: "center",
+    backgroundColor: "gray",
   },
   buttonText: {
     fontSize: 16,

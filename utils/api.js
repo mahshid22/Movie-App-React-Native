@@ -124,3 +124,32 @@ export const fetchShowTrailer = async (tvShowId) => {
     throw error;
   }
 };
+
+
+export const fetchSimilarMovies = async (movieId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/movie/${movieId}/similar`, {
+      params: {
+        api_key: API_KEY,
+      },
+    });
+    return response.data.results;
+  } catch (error) {
+    console.error("Error Fetching Similar Movies:", error);
+    return [];
+  }
+};
+
+export const fetchSimilarShows = async (tvShowId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/tv/${tvShowId}/similar`, {
+      params: {
+        api_key: API_KEY,
+      },
+    });
+    return response.data.results;
+  } catch (error) {
+    console.error("Error Fetching Similar shows:", error);
+    return [];
+  }
+};
