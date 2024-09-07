@@ -1,31 +1,19 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
-import { useUser } from "../../context/UserContext";
-import MovieCard from "../components/MovieCard";
-import TVShowCard from "../components/TVShowCard";
-import Carousel from "../components/Carousel";
-import { MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { useUser } from '../../context/UserContext';
+import MovieCard from '../components/MovieCard';
+import TVShowCard from '../components/TVShowCard';
+import Carousel from '../components/Carousel';
+import { MaterialIcons, Feather } from '@expo/vector-icons'; 
+import { useTheme } from '../../context/ThemeContext'; 
+import { useRouter } from 'expo-router';
 
-const User = () => {
-  const router = useRouter();
-  const {
-    userName,
-    updateUsername,
-    watched,
-    setWatched,
-    toWatched,
-    setToWatched,
-  } = useUser();
+const UserScreen = () => {
+  const { theme, toggleTheme } = useTheme(); 
+  const { username, updateUsername, watched, setWatched, toWatch, setToWatch } = useUser();
   const [isEditing, setIsEditing] = useState(false);
-  const [newUserName, setNewUserName] = useState(userName);
+  const [newUsername, setNewUsername] = useState(username);
+  const router=useRouter();
 
   const handleEditPress = () => {
     setIsEditing(true);
@@ -38,11 +26,11 @@ const User = () => {
 
   const handleAddToWatched = (item) => {
     setWatched((prev) => [...prev, item]);
-    setToWatched((prev) => prev.filter((i) => i.id !== item.id));
+    setToWatch((prev) => prev.filter((i) => i.id !== item.id));
   };
 
   const handleAddToToWatch = (item) => {
-    setToWatched((prev) => [...prev, item]);
+    setToWatch((prev) => [...prev, item]);
     setWatched((prev) => prev.filter((i) => i.id !== item.id));
   };
 
@@ -51,24 +39,19 @@ const User = () => {
   };
 
   const handleRemoveFromToWatch = (item) => {
-    setToWatched((prev) => prev.filter((i) => i.id !== item.id));
+    setToWatch((prev) => prev.filter((i) => i.id !== item.id));
   };
 
   const renderItem = (item, listType) => {
-    const isWatched = listType === "watched";
-    const isToWatch = listType === "toWatch";
+    const isWatched = listType === 'watched';
+    const isToWatch = listType === 'toWatch';
+
     return (
-      <View key={item.id}>
+      <View style={styles.cardContainer} key={item.id}>
         {item.title ? (
-          <MovieCard
-            movie={item}
-            onPress={() => router.push(`/detail?movieId=${item.id}`)}
-          />
+          <MovieCard movie={item}  onPress={() => router.push(`/detail?movieId=${item.id}`)} />
         ) : (
-          <TVShowCard
-            show={item}
-            onPress={() => router.push(`/detail?tvId=${item.id}`)}
-          />
+          <TVShowCard show={item} onPress={() => router.push(`/detail?tvShowId=${item.id}`)} />
         )}
         <View style={styles.cardActions}>
           {isToWatch && !isWatched && (
@@ -95,23 +78,106 @@ const User = () => {
       </View>
     );
   };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Hello from User</Text>
-    </View>
+    <ScrollView style={[styles.container, { backgroundColor: theme === 'dark' ? '#000000' : '#FFFFFF' }]}>
+      <View style={styles.topPadding} />
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          {isEditing ? (
+            <TextInput
+              style={[styles.usernameInput, { color: theme === 'dark' ? '#FFFFFF' : '#000000' }]}
+              value={newUsername}
+              onChangeText={setNewUsername}
+              onSubmitEditing={handleSavePress}
+              returnKeyType="done"
+            />
+          ) : (
+            <Text style={[styles.username, { color: theme === 'dark' ? '#FFFFFF' : '#000000' }]}>Hi {username}</Text>
+          )}
+          <TouchableOpacity onPress={isEditing ? handleSavePress : handleEditPress}>
+            <MaterialIcons name={isEditing ? "check" : "edit"} size={24} color={theme === 'dark' ? '#FFFFFF' : '#000000'} />
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity onPress={toggleTheme} style={styles.themeButton}>
+          <Feather name={theme === 'dark' ? 'sun' : 'moon'} size={24} color={theme === 'dark' ? '#FFFFFF' : '#000000'} />
+        </TouchableOpacity>
+      </View>
+      <Text style={[styles.sectionTitle, { color: theme === 'dark' ? '#FFFFFF' : '#000000' }]}>Watched Movies and TV Shows</Text>
+      {watched.length > 0 ? (
+        <Carousel
+          data={watched}
+          renderItem={({ item }) => renderItem(item, 'watched')}
+        />
+      ) : (
+        <Text style={[styles.noItemsText, { color: theme === 'dark' ? '#FFFFFF' : 'grey' }]}>No watched items</Text>
+      )}
+      <Text style={[styles.sectionTitle, { color: theme === 'dark' ? '#FFFFFF' : '#000000' }]}>To Watch Movies and TV Shows</Text>
+      {toWatch.length > 0 ? (
+        <Carousel
+          data={toWatch}
+          renderItem={({ item }) => renderItem(item, 'toWatch')}
+        />
+      ) : (
+        <Text style={[styles.noItemsText, { color: theme === 'dark' ? '#FFFFFF' : 'grey' }]}>No items to watch</Text>
+      )}
+    </ScrollView>
   );
 };
-
-export default User;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    padding: 16,
   },
-  text: {
+  topPadding: {
+    paddingTop: 40, // Adjust the padding value as needed
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between', // Add this line
+    marginBottom: 16,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  username: {
+    fontSize: 35,
+    fontWeight: 'bold',
+    marginRight: 8,
+  },
+  usernameInput: {
     fontSize: 24,
-    fontWeight: "700",
+    fontWeight: 'bold',
+    marginRight: 8,
+    borderBottomWidth: 1,
+    flex: 1,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginVertical: 8,
+  },
+  noItemsText: {
+    fontSize: 16,
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  cardContainer: {
+    marginBottom: 16,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 8,
+  },
+  themeButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 4,
   },
 });
+
+export default UserScreen;
