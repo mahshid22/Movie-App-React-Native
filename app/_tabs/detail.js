@@ -1,89 +1,99 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
   ScrollView,
+  ActivityIndicator,
   TouchableOpacity,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import {
-  fetchTVShowDetails,
   fetchMovieDetails,
-  fetchShowTrailer,
   fetchMovieTrailer,
-  fetchSimilarShows,
+  fetchTVShowDetails,
+  fetchShowTrailer,
   fetchSimilarMovies,
+  fetchSimilarShows,
 } from "../../utils/api";
 import { WebView } from "react-native-webview";
-import { useRouter } from "expo-router";
-
 import MovieCard from "../components/MovieCard";
 import TVShowCard from "../components/TVShowCard";
 import Carousel from "../components/Carousel";
 import { useUser } from "../../context/UserContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTheme } from "../../context/ThemeContext"; // Import the useTheme hook
+import { useRouter } from "expo-router"; // Make sure to import useRouter
+
 const Detail = () => {
   const router = useRouter();
-  const { movieId, tvId } = useLocalSearchParams();
-  const [details, setDetails] = useState([]);
-  const [similars, setSimilars] = useState([]);
+  const { movieId, tvShowId } = useLocalSearchParams();
+  const [details, setDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [trailerId, setTrailerId] = useState(null);
-  const {
-    userName,
-    updateUsername,
-    watched,
-    setWatched,
-    toWatched,
-    setToWatched,
-  } = useUser();
-  isMovie = Boolean(movieId);
-  isTv = Boolean(tvId);
+  const [similar, setSimilar] = useState([]);
+  const { watched, setWatched, toWatch, setToWatch } = useUser();
+  const { theme } = useTheme(); // Get the theme from the context
 
   useEffect(() => {
     const loadDetails = async () => {
       try {
-        if (isMovie) {
-          console.log("movieeeeeee");
+        if (movieId) {
           const movieDetails = await fetchMovieDetails(movieId);
           setDetails(movieDetails);
+
           const movieTrailerId = await fetchMovieTrailer(movieId);
           setTrailerId(movieTrailerId);
+
           const similarMovies = await fetchSimilarMovies(movieId);
-          setSimilars(similarMovies);
-        } else if (isTv) {
-          const tvDetails = await fetchTVShowDetails(tvId);
-          setDetails(tvDetails);
-          const tvTrailerId = await fetchShowTrailer(tvId);
-          setTrailerId(tvTrailerId);
-          const similarTvShows = await fetchSimilarShows(tvId);
-          setSimilars(similarTvShows);
+          setSimilar(similarMovies);
+        } else if (tvShowId) {
+          const tvShowDetails = await fetchTVShowDetails(tvShowId);
+          setDetails(tvShowDetails);
+
+          const showTrailerId = await fetchShowTrailer(tvShowId);
+          setTrailerId(showTrailerId);
+
+          const showSimilar = await fetchSimilarShows(tvShowId);
+          setSimilar(showSimilar);
         }
-      } catch (err) {
-        console.log(err);
+      } catch (error) {
+        console.error("Failed to fetch details:", error);
       } finally {
         setLoading(false);
       }
     };
-    loadDetails();
-  }, [movieId, tvId]);
 
-  const handleMarkAsWatched = async() => {
-    if (details) {
-      const newWatched = { ...watched, details };
-      setWatched(newWatched)
-      await AsyncStorage.setItem("watched",JSON.stringify(newWatched))
+    loadDetails();
+  }, [movieId, tvShowId]);
+
+  const handleMarkAsWatched = async () => {
+    try {
+      if (details) {
+        console.log(watched)
+        const newWatched = [...watched, details];
+        setWatched(newWatched);
+        await AsyncStorage.setItem("watched", JSON.stringify(newWatched));
+        console.log(`${details.title || details.name} added to Watched List.`);
+      }
+    } catch (err) {
+      console.log("err",err);
     }
   };
-  const handleMarkAsToWatched = async() => {
-    if (details) {
-      const neToWatch = { ...toWatched, details };
-      setToWatched(neToWatch)
-      await AsyncStorage.setItem("toWatched",JSON.stringify(neToWatch))
+
+  const handleMarkAsToWatch = async () => {
+    try {
+      if (details) {
+        const newToWatch = [...toWatch, details];
+        setToWatch(newToWatch);
+        await AsyncStorage.setItem("toWatch", JSON.stringify(newToWatch));
+        console.log(`${details.title || details.name} added to To Watch List.`);
+      }
+    } catch (err) {
+      console.log(err);
     }
   };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -93,10 +103,25 @@ const Detail = () => {
   }
 
   if (!details) {
-    return <Text style={[styles.text]}>No details available</Text>;
+    return (
+      <Text
+        style={[
+          styles.text,
+          { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+        ]}
+      >
+        No details available
+      </Text>
+    );
   }
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={[
+        styles.container,
+        { backgroundColor: theme === "dark" ? "#000000" : "#FFFFFF" },
+      ]}
+    >
       {trailerId ? (
         <View style={styles.videoContainer}>
           <WebView
@@ -105,88 +130,224 @@ const Detail = () => {
             javaScriptEnabled
             domStorageEnabled
             allowsInlineMediaPlayback
-            onError={(error) => console.log(error)}
+            onError={(error) => console.error("WebView error:", error)}
           />
         </View>
       ) : (
-        <Text>no trailer</Text>
+        <Text
+          style={[
+            styles.noTrailerText,
+            { color: theme === "dark" ? "#999999" : "#333333" },
+          ]}
+        >
+          No trailer available
+        </Text>
       )}
+
       <View style={styles.detailsContainer}>
-        <Text style={[styles.title]}>{details.title || details.name}</Text>
-        <Text style={[styles.sectionTitle]}>Overview</Text>
-        <Text style={[styles.text]}>{details.overview}</Text>
-        <Text style={[styles.sectionTitle]}>Rating</Text>
-        <Text style={[styles.text]}>{details.vote_average}</Text>
-        <Text style={[styles.sectionTitle]}>Release Date</Text>
-        <Text style={[styles.text]}>
+        <Text
+          style={[
+            styles.title,
+            { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+          ]}
+        >
+          {details.title || details.name}
+        </Text>
+        <Text
+          style={[
+            styles.sectionTitle,
+            { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+          ]}
+        >
+          Overview
+        </Text>
+        <Text
+          style={[
+            styles.text,
+            { color: theme === "dark" ? "#CCCCCC" : "#000000" },
+          ]}
+        >
+          {details.overview}
+        </Text>
+        <Text
+          style={[
+            styles.sectionTitle,
+            { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+          ]}
+        >
+          Rating
+        </Text>
+        <Text
+          style={[
+            styles.text,
+            { color: theme === "dark" ? "#CCCCCC" : "#000000" },
+          ]}
+        >
+          {details.vote_average}
+        </Text>
+        <Text
+          style={[
+            styles.sectionTitle,
+            { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+          ]}
+        >
+          Release Date
+        </Text>
+        <Text
+          style={[
+            styles.text,
+            { color: theme === "dark" ? "#CCCCCC" : "#000000" },
+          ]}
+        >
           {details.release_date || details.first_air_date}
         </Text>
-        <Text style={[styles.sectionTitle]}>Runtime</Text>
-        <Text style={[styles.text]}>
+        <Text
+          style={[
+            styles.sectionTitle,
+            { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+          ]}
+        >
+          Runtime
+        </Text>
+        <Text
+          style={[
+            styles.text,
+            { color: theme === "dark" ? "#CCCCCC" : "#000000" },
+          ]}
+        >
           {details.runtime ? `${details.runtime} minutes` : "N/A"}
         </Text>
-        <Text style={[styles.sectionTitle]}>Genres</Text>
-        <Text style={[styles.text]}>
+        <Text
+          style={[
+            styles.sectionTitle,
+            { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+          ]}
+        >
+          Genres
+        </Text>
+        <Text
+          style={[
+            styles.text,
+            { color: theme === "dark" ? "#CCCCCC" : "#000000" },
+          ]}
+        >
           {details.genres?.map((genre) => genre.name).join(", ")}
         </Text>
-        <Text style={[styles.sectionTitle]}>Production Companies</Text>
-        <Text style={[styles.text]}>
+        <Text
+          style={[
+            styles.sectionTitle,
+            { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+          ]}
+        >
+          Production Companies
+        </Text>
+        <Text
+          style={[
+            styles.text,
+            { color: theme === "dark" ? "#CCCCCC" : "#000000" },
+          ]}
+        >
           {details.production_companies
             ?.map((company) => company.name)
             .join(", ") || "N/A"}
         </Text>
-        <Text style={[styles.sectionTitle]}>Budget</Text>
-        <Text style={[styles.text]}>
+        <Text
+          style={[
+            styles.sectionTitle,
+            { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+          ]}
+        >
+          Budget
+        </Text>
+        <Text
+          style={[
+            styles.text,
+            { color: theme === "dark" ? "#CCCCCC" : "#000000" },
+          ]}
+        >
           {details.budget ? `$${details.budget.toLocaleString()}` : "N/A"}
         </Text>
-        <Text style={[styles.sectionTitle]}>Revenue</Text>
-        <Text style={[styles.text]}>
+        <Text
+          style={[
+            styles.sectionTitle,
+            { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+          ]}
+        >
+          Revenue
+        </Text>
+        <Text
+          style={[
+            styles.text,
+            { color: theme === "dark" ? "#CCCCCC" : "#000000" },
+          ]}
+        >
           {details.revenue ? `$${details.revenue.toLocaleString()}` : "N/A"}
         </Text>
       </View>
+
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={styles.button}
-          onPress={() => handleMarkAsWatched}
+          style={[
+            styles.button,
+            { backgroundColor: theme === "dark" ? "#444444" : "#DDDDDD" },
+          ]}
+          onPress={handleMarkAsWatched}
         >
-          <Text style={styles.buttonText}>mark as watched</Text>
+          <Text
+            style={[
+              styles.buttonText,
+              { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+            ]}
+          >
+            Mark As Watched
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.button}
-          onPress={() => handleMarkAsToWatched}
+          style={[
+            styles.button,
+            { backgroundColor: theme === "dark" ? "#444444" : "#DDDDDD" },
+          ]}
+          onPress={handleMarkAsToWatch}
         >
-          <Text style={styles.buttonText}>mark as To watched</Text>
+          <Text
+            style={[
+              styles.buttonText,
+              { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+            ]}
+          >
+            Mark As To Watch
+          </Text>
         </TouchableOpacity>
       </View>
-      {!!similars.length && (
-        <View style={styles.similarContainer}>
-          <Text style={styles.similarTitle}>
-            {isMovie ? "similar movies" : "similar tv show"}
-          </Text>
-
-          <Carousel
-            data={similars}
-            renderItem={({ item }) =>
-              isMovie ? (
-                <MovieCard
-                  movie={item}
-                  onPress={() => router.push(`/detail?movieId=${item.id}`)}
-                />
-              ) : (
-                <TVShowCard
-                  show={item}
-                  onPress={() => router.push(`/detail?tvId=${item.id}`)}
-                />
-              )
-            }
-          />
-        </View>
-      )}
+      <View style={styles.similarContainer}>
+        <Text
+          style={[
+            styles.similarTitle,
+            { color: theme === "dark" ? "#FFFFFF" : "#000000" },
+          ]}
+        >
+          {movieId ? "Similar Movies" : "Similar Shows"}
+        </Text>
+        <Carousel
+          data={similar}
+          renderItem={({ item }) =>
+            movieId ? (
+              <MovieCard
+                movie={item}
+                onPress={() => router.push(`/detail?movieId=${item.id}`)}
+              />
+            ) : (
+              <TVShowCard
+                show={item}
+                onPress={() => router.push(`/detail?tvShowId=${item.id}`)}
+              />
+            )
+          }
+        />
+      </View>
     </ScrollView>
   );
 };
-
-export default Detail;
 
 const styles = StyleSheet.create({
   container: {
@@ -230,7 +391,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   buttonContainer: {
-    marginVertical: 16,
+    marginTop: 16,
     flexDirection: "row",
     justifyContent: "space-between",
   },
@@ -240,7 +401,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginHorizontal: 8,
     alignItems: "center",
-    backgroundColor: "gray",
   },
   buttonText: {
     fontSize: 16,
@@ -255,3 +415,5 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 });
+
+export default Detail;
