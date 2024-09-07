@@ -1,30 +1,45 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  const [userName, setUserName] = useState("");
+  const [username, setUsername] = useState('mahshid');
   const [watched, setWatched] = useState([]);
-  const [toWatched, setToWatched] = useState([]);
+  const [toWatch, setToWatch] = useState([]);
 
   useEffect(() => {
-    const localData = async () => {
-      const watchedData = await AsyncStorage.getItem("watched");
-      const toWatch = await AsyncStorage.getItem("toWatched");
-      const storedUserName = await AsyncStorage.getItem("userName");
-      !!watchedData && setWatched(JSON.parse(watched));
-      !!toWatch && setToWatched(JSON.parse(toWatch));
-      !!storedUserName && setUserName(JSON.parse(storedUserName));
+    const loadData = async () => {
+      try {
+        const sss = await AsyncStorage.removeItem("toWatch");
+        const watchedData = await AsyncStorage.getItem('watched');
+        const toWatchData = await AsyncStorage.getItem('toWatch');
+        const storedUsername = await AsyncStorage.getItem('username'); // Corrected variable
+
+        if (watchedData) setWatched(JSON.parse(watchedData));
+        if (toWatchData) setToWatch(JSON.parse(toWatchData));
+        if (storedUsername) setUsername(storedUsername); // Use storedUsername
+      } catch (error) {
+        console.error('Error loading user data from AsyncStorage:', error);
+      }
     };
-    localData();
+    loadData();
   }, []);
 
-  const updateUsername = async (newUserName) => {
-    setUserName(newUserName);
-    AsyncStorage.setItem("userName", newUserName);
+  const updateUsername = async (newUsername) => {
+    try {
+      setUsername(newUsername);
+      await AsyncStorage.setItem('username', newUsername);
+    } catch (error) {
+      console.error('Error saving username to AsyncStorage:', error);
+    }
   };
-  return <UserContext.Provider value={{userName,updateUsername, watched,setWatched,toWatched,setToWatched }}>{children}</UserContext.Provider>
+
+  return (
+    <UserContext.Provider value={{ username, updateUsername, watched, toWatch, setToWatch, setWatched }}>
+      {children}
+    </UserContext.Provider>
+  );
 };
 
-export const useUser = ()=>useContext(UserContext)
+export const useUser = () => useContext(UserContext);
