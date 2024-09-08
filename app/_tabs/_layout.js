@@ -9,6 +9,7 @@ const Layout = ()=>{
             headerShown: false,
             tabBarIcon: ({ color, size }) => {
               let iconName;
+              console.log(route);
               switch (route.name) {
                 case 'index':
                   iconName = 'home';
@@ -25,7 +26,7 @@ const Layout = ()=>{
                 case 'detail':
                   iconName = 'information';
                   break;
-                case 'searchScreen':
+                case 'search':
                   iconName = 'magnify';
                   break;
                 default:
@@ -45,6 +46,7 @@ const Layout = ()=>{
             <Tabs.Screen name="detail" options={{title: "Details"}}/>
             <Tabs.Screen name="tvshows" options={{title: "Tv Shows"}}/>
             <Tabs.Screen name="user" options={{title: "User"}}/>
+            <Tabs.Screen name="search" options={{title: "Search"}}/>
         </Tabs>
     )
 }

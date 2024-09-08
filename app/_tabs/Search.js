@@ -11,7 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScrollView, StyleSheet, Text } from "react-native";
 
-const SearchScreen = () => {
+const Search = () => {
   const { query } = useLocalSearchParams();
   const router = useRouter();
   const [searchResult, setSearchResult] = useState([]);
@@ -105,4 +105,4 @@ const styles = StyleSheet.create({
     textAlign: 'left'
   },
 });
-export default SearchScreen;
+export default Search;
