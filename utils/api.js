@@ -78,27 +78,26 @@ export const fetchMovieDetails = async (movieId) => {
   try {
     const response = await api.get(`/movie/${movieId}`, {
       params: {
-        append_to_response: 'videos',
+        append_to_response: "videos",
       },
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching movie details:', error);
+    console.error("Error fetching movie details:", error);
     throw error;
   }
 };
-
 
 export const fetchTVShowDetails = async (tvShowId) => {
   try {
     const response = await api.get(`/tv/${tvShowId}`, {
       params: {
-        append_to_response: 'videos',
+        append_to_response: "videos",
       },
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching TV show details:', error);
+    console.error("Error fetching TV show details:", error);
     throw error;
   }
 };
@@ -138,7 +137,6 @@ export const fetchShowTrailer = async (tvShowId) => {
     throw error;
   }
 };
-
 
 export const fetchSimilarMovies = async (movieId) => {
   try {

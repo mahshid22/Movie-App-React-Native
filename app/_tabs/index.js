@@ -4,13 +4,20 @@ import { View, Text, StyleSheet, ScrollView } from "react-native";
 import Carousel from "../components/Carousel";
 import MovieCard from "../components/MovieCard";
 import TVShowCard from "../components/TVShowCard";
-import { fetchPopularsTVShow, fetchPopularsMovies } from "../../utils/api";
+import {
+  fetchPopularsTVShow,
+  fetchPopularsMovies,
+  fetchSearchResults,
+} from "../../utils/api";
 import { useRouter } from "expo-router";
-
+import SearchBar from "../components/SearchBar";
 const Home = () => {
   const router = useRouter();
   const [popularMovies, setPopularMovies] = useState([]);
   const [popularTvShows, setPopularTvShows] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+
   useEffect(() => {
     const loacalDAta = async () => {
       try {
@@ -24,6 +31,25 @@ const Home = () => {
     };
     loacalDAta();
   }, []);
+
+  const handleQueryChange = async (query) => {
+    setSearchQuery(query);
+    if (query.length) {
+      try {
+        const searchResult = await fetchSearchResults(query);
+        setSuggestions(searchResult);
+      } catch (err) {}
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  const handleQuerySubmit = (event) => {
+    const query = event.nativeEvent.text.trim();
+    if (query.length > 0) {
+      router.push(`/search?query=${encodeURIComponent(query)}`);
+    }
+  };
 
   const renderMovieItem = ({ item }) => (
     <MovieCard
@@ -40,6 +66,12 @@ const Home = () => {
 
   return (
     <ScrollView style={styles.container}>
+      <SearchBar
+        query={searchQuery}
+        onQueryChange={handleQueryChange}
+        onQuerySubmit={handleQuerySubmit}
+        suggestions={suggestions}
+      />
       <Text style={styles.text}>Movies:</Text>
       <Carousel data={popularMovies} renderItem={renderMovieItem} />
       <Text style={styles.text}>TV shows:</Text>
