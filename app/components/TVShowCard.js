@@ -51,10 +51,12 @@ const styles = StyleSheet.create({
   },
   cover: {
     width: "100%",
-    height: 150, // Fixed height for the cover
+    height: 200, // Fixed height for the cover
   },
   content: {
     paddingVertical: 8,
+    height:100
+
   },
   title: {
     fontSize: 16,

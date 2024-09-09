@@ -6,11 +6,14 @@ import MovieCard from "../components/MovieCard";
 import TVShowCard from "../components/TVShowCard";
 import { fetchRecommendedMovies, fetchPopularsMovies } from "../../utils/api";
 import { useRouter } from "expo-router";
+import { useTheme } from "../../context/ThemeContext";
 
 const Movies = () => {
   const router = useRouter();
   const [popularMovies, setPopularMovies] = useState([]);
   const [recommendedMovies, setRecommendedMovies] = useState([]);
+  const { theme } = useTheme();
+
   useEffect(() => {
     const loacalDAta = async () => {
       try {
@@ -25,13 +28,17 @@ const Movies = () => {
     loacalDAta();
     return () => {};
   }, []);
-  const renderMovieItem = ({ item }) => <MovieCard movie={item}       onPress={() => router.push(`/detail?movieId= ${item.id}`)}
-  />;
+  const renderMovieItem = ({ item }) => (
+    <MovieCard
+      movie={item}
+      onPress={() => router.push(`/detail?movieId= ${item.id}`)}
+    />
+  );
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.text}>Popular Movies:</Text>
+    <ScrollView style={[styles.container,{backgroundColor:theme==='dark'?'#000000':'#FFFFFF'}]}>
+      <Text style={[styles.text,{color:theme==='dark'?'#FFFFFF':'#000000'}]}>Popular Movies:</Text>
       <Carousel data={popularMovies} renderItem={renderMovieItem} />
-      <Text style={styles.text}>Recommended Movies:</Text>
+      <Text style={[styles.text,{color:theme==='dark'?'#FFFFFF':'#000000'}]}>Recommended Movies:</Text>
       <Carousel data={recommendedMovies} renderItem={renderMovieItem} />
     </ScrollView>
   );

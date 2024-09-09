@@ -11,7 +11,10 @@ import {
 } from "../../utils/api";
 import { useRouter } from "expo-router";
 import SearchBar from "../components/SearchBar";
+import { useTheme } from '../../context/ThemeContext'; 
+
 const Home = () => {
+  const { theme } = useTheme(); 
   const router = useRouter();
   const [popularMovies, setPopularMovies] = useState([]);
   const [popularTvShows, setPopularTvShows] = useState([]);
@@ -65,16 +68,16 @@ const Home = () => {
   );
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container,{backgroundColor:theme==='dark'?'#000000':'#FFFFFF'}]}>
       <SearchBar
         query={searchQuery}
         onQueryChange={handleQueryChange}
         onQuerySubmit={handleQuerySubmit}
         suggestions={suggestions}
       />
-      <Text style={styles.text}>Movies:</Text>
+      <Text style={[styles.text,{color:theme==='dark'?'#FFFFFF':'#000000'}]}>Movies:</Text>
       <Carousel data={popularMovies} renderItem={renderMovieItem} />
-      <Text style={styles.text}>TV shows:</Text>
+      <Text style={[styles.text,{color:theme==='dark'?'#FFFFFF':'#000000'}]}>TV shows:</Text>
       <Carousel data={popularTvShows} renderItem={renderTVShowItem} />
     </ScrollView>
   );

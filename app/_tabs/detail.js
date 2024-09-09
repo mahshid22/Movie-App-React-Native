@@ -96,7 +96,7 @@ const Detail = () => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer,{backgroundColor:theme==='dark'?'#000000':'#FFFFFF'}]}>
         <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
@@ -123,7 +123,7 @@ const Detail = () => {
       ]}
     >
       {trailerId ? (
-        <View style={styles.videoContainer}>
+        <View style={[styles.videoContainer,{backgroundColor:theme==='dark'?'#000000':'#FFFFFF'}]}>
           <WebView
             source={{ uri: `https://www.youtube.com/embed/${trailerId}` }}
             style={styles.video}

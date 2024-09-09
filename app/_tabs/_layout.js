@@ -43,10 +43,10 @@ const Layout = ()=>{
         >
             <Tabs.Screen name="index" options={{title: "Home"}}/>
             <Tabs.Screen name="movies" options={{title: "Movies"}}/>
-            <Tabs.Screen name="detail" options={{title: "Details"}}/>
+            <Tabs.Screen name="detail" options={{title: "Details", tabBarButton: ()=>null}}/>
             <Tabs.Screen name="tvshows" options={{title: "Tv Shows"}}/>
             <Tabs.Screen name="user" options={{title: "User"}}/>
-            <Tabs.Screen name="search" options={{title: "Search"}}/>
+            <Tabs.Screen name="search" options={{title: "Search", tabBarButton: ()=>null}}/>
         </Tabs>
     )
 }
