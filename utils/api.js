@@ -73,6 +73,25 @@ export const fetchRecommendedMovies = async () => {
     throw error;
   }
 };
+export const fetchRecommendedShows = async () => {
+  try {
+    const response = await api.get("/tv/top_rated");
+    return response.data.results;
+  } catch (error) {
+    console.error("Error fetching Recommended Shows:", error);
+    throw error;
+  }
+};
+
+export const fetchPopularTVShows = async () => {
+  try {
+    const response = await api.get("/tv/popular");
+    return response.data.results;
+  } catch (error) {
+    console.error("Error fetching popular TV shows:", error);
+    throw error;
+  }
+};
 
 export const fetchMovieDetails = async (movieId) => {
   try {
